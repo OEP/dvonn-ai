@@ -1,0 +1,122 @@
+DVONN Game-playing IA
+
+== Requirements ==
+
+  - CLisp
+
+== How to play DVONN ==
+
+This topic is outside the scope of this README. This document only describes
+the (lack of) user interface. For a description of how to play DVONN, please
+read the class paper.
+
+== Using ==
+
+To play a game, just use the play script:
+
+$> ./play.sh
+
+This will pit you against a computer player of type (1 3), which is the most
+difficult player I could make while still keeping the computation time
+within the interactive range. This means the computer has a fixed ply of 1
+and a quiescence threshold of 3. To play a different kind of opponent,
+currently the code has to be directly modified.
+
+You are the white player and the computer is the black player. The computer
+will prompt you for a move like so:
+
+     0    1    2    3    4    5    6    7    8    9    10   
+  0       1WN  1WN  1WN  1BN  1BN  1RC  1WN  1BN  1BN       
+  1    1WN  1WN  1BN  1BN  1BN  1BN  1WN  1WN  1WN  1BN       
+  2  1RC  1WN  1BN  1BN  1WN  1BN  1BN  1BN  1WN  1WN  1RC  
+  3    1BN  1WN  1WN  1WN  1BN  1WN  1WN  1BN  1BN  1BN       
+  4       1BN  1WN  1WN  1BN  1WN  1WN  1BN  1WN  1BN       
+  Score: White 23   ::   Black 23
+
+  WHITE, what will you do?:
+
+The first part is the game board. Below, it will print the current score.
+Finally it will prompt you for your move.
+
+Notice that sense we play on a hexagonal grid, we have to resort to some funny
+conventions for 2D coordinates. The top row of numbers is the X coordinate and
+the left column of numbers is the Y coordinate. Figuring out the Y coordinate
+is straightforward, however, the X coordinate is more difficult.
+
+To find the X coordinate, first select the piece you wish to move. Then, trace
+your finger directly left. The first X coordinate you cross is the X coordinate
+of that piece.
+
+Let's try an example. Let's start with the easy case. Say we wish to move the
+piece indicated with dashes:
+
+     0    1    2    3    4    5    6    7    8    9    10   
+  0       1WN  1WN  1WN  1BN  1BN  1RC  1WN  1BN  1BN       
+  1    1WN  1WN  1BN  1BN  1BN  1BN  1WN  1WN  1WN  1BN       
+  2  1RC  1WN  1BN  1BN -1WN- 1BN  1BN  1BN  1WN  1WN  1RC  
+  3    1BN  1WN  1WN  1WN  1BN  1WN  1WN  1BN  1BN  1BN       
+  4       1BN  1WN  1WN  1BN  1WN  1WN  1BN  1WN  1BN       
+
+We see right away that its Y coordinate is 2. We also notice that this piece
+is directly under the '4' in the X coordinates. Therefore, its coordinate is
+(4 2).
+
+Now let's try a more complicated piece:
+
+     0    1    2    3    4    5    6    7    8    9    10   
+  0       1WN  1WN  1WN  1BN  1BN  1RC  1WN  1BN  1BN       
+  1    1WN  1WN  1BN  1BN  1BN  1BN  1WN -1WN- 1WN  1BN       
+  2  1RC  1WN  1BN  1BN  1WN  1BN  1BN  1BN  1WN  1WN  1RC  
+  3    1BN  1WN  1WN  1WN  1BN  1WN  1WN  1BN  1BN  1BN       
+  4       1BN  1WN  1WN  1BN  1WN  1WN  1BN  1WN  1BN       
+
+We see that this one is at Y coordinate 1. However, it is offset a bit from
+the '7' column in the X coordinate. Since '7' is the first number directly
+left of this piece, we say its X coordinate is 7, making the full coordinate
+(7 1).
+
+To make a move, all you must do is specify (in order) the X coordinate, the Y
+coordinate, and the cardinal direction you want to move (one of NW, NE, E, W,
+SW, SE).
+
+So say we want to move the piece at (7 1) northeast. Then we just enter
+"7 1 NE" at the prompt.
+
+    0    1    2    3    4    5    6    7    8    9    10   
+  0       1WN  1WN  1WN  1BN  1BN  1RC  1WN  1BN  1BN       
+  1    1WN  1WN  1BN  1BN  1BN  1BN  1WN  1WN  1WN  1BN       
+  2  1RC  1WN  1BN  1BN  1WN  1BN  1BN  1BN  1WN  1WN  1RC  
+  3    1BN  1WN  1WN  1WN  1BN  1WN  1WN  1BN  1BN  1BN       
+  4       1BN  1WN  1WN  1BN  1WN  1WN  1BN  1WN  1BN       
+  Score: White 23   ::   Black 23
+
+  WHITE, what will you do?: 7 1 NE
+  White moves (7 1) NE.
+
+     0    1    2    3    4    5    6    7    8    9    10   
+  0       1WN  1WN  1WN  1BN  1BN  1RC  1WN  2WN  1BN       
+  1    1WN  1WN  1BN  1BN  1BN  1BN  1WN  O    1WN  1BN       
+  2  1RC  1WN  1BN  1BN  1WN  1BN  1BN  1BN  1WN  1WN  1RC  
+  3    1BN  1WN  1WN  1WN  1BN  1WN  1WN  1BN  1BN  1BN       
+  4       1BN  1WN  1WN  1BN  1WN  1WN  1BN  1WN  1BN       
+  Score: White 24   ::   Black 22
+
+Now is a good time to discuss what all the symbols on the board mean. Where
+there is a piece on the board, you will see a marking following this format:
+
+  <NUMBER><COLOR><TYPE>
+
+where NUMBER is the number of pieces in the stack, COLOR is the color of the
+player who owns that stack, and TYPE is the type of stack. NUMBER will always
+be a positive integer. COLOR will always be W for white, B for black, or R for
+red (note there is not a red player, this is just the convention for saying
+that neither the black or white player owns this stack). Finally, the stack
+TYPE is either N for 'normal' or C for 'control'. A control stack is just a
+stack which has a red piece in it somewhere.
+
+Where there is not a piece, you will see a blank (" ") if that square is not
+a part of the game board, or an "O" if it is an empty space on the game board.
+
+Please note that the number of spaces you move is implied by the stack you
+select to move. A stack can only move the number of spaces equal to the number
+of pieces in the stack.
